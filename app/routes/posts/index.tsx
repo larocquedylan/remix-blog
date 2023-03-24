@@ -4,8 +4,9 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { LoaderFunction } from "react-router";
 import { getPosts } from "~/models/post.server";
 
-const LoaderData = () => {
-    const { posts } =  Awaited <ReturnType< typeof getPosts> >
+type LoaderData = {
+   posts:  Awaited <ReturnType< typeof getPosts>>
+};
 
 export const loader: LoaderFunction = async () => {
     const posts = await getPosts();
@@ -13,7 +14,8 @@ export const loader: LoaderFunction = async () => {
 
 
 export default function Posts() {
-  const { posts } = useLoaderData<typeof loader>();
+  // const { posts } = useLoaderData<typeof loader>();
+  const { posts } = useLoaderData() as LoaderData;
 
   return (
     <main>

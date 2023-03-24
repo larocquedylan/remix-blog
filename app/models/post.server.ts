@@ -1,10 +1,10 @@
-type Post = {
-  slug: string;
-  title: string;
-};
+// type Post = {
+//   slug: string;
+//   title: string;
+// };
 
-export async function getPosts(): Promise<Array<Post>> {
-  return [
+export async function getPosts() {
+  const posts = [
     {
       slug: "my-first-post",
       title: "My First Post",
@@ -14,4 +14,6 @@ export async function getPosts(): Promise<Array<Post>> {
       title: "A Mixtape I Made Just For You",
     },
   ];
+
+  return posts;
 }
