@@ -1,6 +1,6 @@
-import { redirect } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { ActionFunction } from "@remix-run/node";
-import { Form } from "@remix-run/react";
+import { Form, useActionData } from "@remix-run/react";
 import { createPost } from "~/models/post.server";
 
 export const action: ActionFunction = async ({ request }) => {
@@ -10,6 +10,18 @@ export const action: ActionFunction = async ({ request }) => {
   const title = formData.get("title");
   const slug = formData.get("slug");
   const markdown = formData.get("markdown");
+
+  // backend validation
+  const errors = {
+    title: title ? null : "Title is required",
+    slug: slug ? null : "Slug is required",
+    markdown: markdown ? null : "Markdown is required",
+  };
+
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+  if (hasErrors) {
+    return json(errors);
+  }
 
   await createPost({ title, slug, markdown });
 
@@ -30,23 +42,35 @@ export const action: ActionFunction = async ({ request }) => {
 const inputClassName = "rounded border border-gray-300 py-2 px-4 block w-full";
 
 export default function newPostRoute() {
+  const errors = useActionData();
   return (
     // The Form component will automatically handle the form submission action once we define out action function above
     <Form method="post">
       <p>
         <label>
-          Post Title:{" "}
+          Post Title:
+          {errors?.title ? (
+            <span className="text-red-500"> {errors.title}</span>
+          ) : null}
           <input type="text" name="title" className={inputClassName} />
         </label>
       </p>
       <p>
         <label>
-          Post Slug:{" "}
+          Post Slug:
+          {errors?.slug ? (
+            <span className="text-red-500"> {errors.slug}</span>
+          ) : null}
           <input type="text" name="slug" className={inputClassName} />
         </label>
       </p>
       <p>
-        <label htmlFor="markdown">Markdown:</label>
+        <label htmlFor="markdown">
+          Markdown:
+          {errors?.markdown ? (
+            <span className="text-red-500"> {errors.markdown}</span>
+          ) : null}
+        </label>
         <br />
         <textarea
           id="markdown"
