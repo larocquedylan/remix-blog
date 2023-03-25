@@ -1,8 +1,9 @@
-import { json, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getPosts } from "~/models/post.server";
 
-// need to add type because `json` in the loader is a generic  so we need to tell it what type of data we are expecting
+// need to add type because `json` in the loader is a generic so we need to tell it what type of data we are expecting
 type LoaderData = {
   posts: Awaited<ReturnType<typeof getPosts>>;
 };
@@ -19,6 +20,9 @@ export default function Posts() {
   return (
     <main>
       <h1>posts</h1>
+      <Link to="admin" className="text-red-600 underline">
+        Admin
+      </Link>
       <ul>
         {posts.map((post) => (
           <li key={post.slug}>
