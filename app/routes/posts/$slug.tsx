@@ -7,15 +7,15 @@ export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;
   const post = await getPost(slug);
   const html = marked(post.markdown);
-  return json({ post, html });
+  return json({ title: post.title, html });
 };
 
 export default function postRoute() {
-  const { post, html } = useLoaderData();
+  const { title, html } = useLoaderData();
 
   return (
     <main className="mx-auto max-w-auto-4xl">
-      <h1 className="my-6 text-3xl text-center border-b-2">{post.title}</h1>
+      <h1 className="my-6 text-3xl text-center border-b-2">{title}</h1>
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </main>
   );
