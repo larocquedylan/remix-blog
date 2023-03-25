@@ -1,6 +1,6 @@
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunction } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData, useNavigation } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { createPost } from "~/models/post.server";
 
@@ -65,6 +65,10 @@ const inputClassName = "rounded border border-gray-300 py-2 px-4 block w-full";
 export default function newPostRoute() {
   const errors = useActionData() as ActionData; // useActionData returns the data from the action function, we define the types accepted in the type ActionData
 
+  // using useTransition() to show a loading state
+  const navigation = useNavigation();
+  const isCreating = Boolean(navigation.state === "loading");
+
   return (
     // The Form component will automatically handle the form submission action once we define out action function above
     <Form method="post">
@@ -106,8 +110,9 @@ export default function newPostRoute() {
         <button
           type="submit"
           className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
+          disabled={isCreating}
         >
-          Create Post
+          {isCreating ? "Creating..." : "Create Post"}
         </button>
       </p>
     </Form>
