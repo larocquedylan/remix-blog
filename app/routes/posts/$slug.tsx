@@ -1,18 +1,22 @@
 import { LoaderFunction, json } from "@remix-run/node";
 import { getPost } from "~/models/post.server";
+import { marked } from "marked";
+import { useLoaderData } from "react-router";
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;
   const post = await getPost(slug);
-  return json({ post });
+  const html = marked(post.markdown);
+  return json({ post, html });
 };
 
 export default function postRoute() {
-  const post = { title: "My first post" };
+  const { post, html } = useLoaderData();
 
   return (
-    <main>
-      <h1>{post.title}</h1>
+    <main className="mx-auto max-w-auto-4xl">
+      <h1 className="my-6 text-3xl text-center border-b-2">{post.title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: html }} />
     </main>
   );
 }
