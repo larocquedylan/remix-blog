@@ -2,16 +2,27 @@ import { LoaderFunction, json } from "@remix-run/node";
 import { getPost } from "~/models/post.server";
 import { marked } from "marked";
 import { useLoaderData } from "react-router";
+import invariant from "tiny-invariant";
+import { type } from "os";
+
+type LoaderData = {
+  title: string;
+  html: string;
+};
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;
+  invariant(slug, "slug is required");
+
   const post = await getPost(slug);
+  invariant(post, `post not found: ${slug}`);
+
   const html = marked(post.markdown);
-  return json({ title: post.title, html });
+  return json<LoaderData>({ title: post.title, html });
 };
 
 export default function postRoute() {
-  const { title, html } = useLoaderData();
+  const { title, html } = useLoaderData() as LoaderData;
 
   return (
     <main className="mx-auto max-w-auto-4xl">
