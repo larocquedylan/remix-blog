@@ -36,3 +36,7 @@ export async function updatePost(
 ) {
   return prisma.post.update({ where: { slug }, data: post }); // return where the slug is equal to the slug we pass in and data is the post we pass in
 }
+
+export async function deletePost(slug: string) {
+  return prisma.post.delete({ where: { slug } });
+}
