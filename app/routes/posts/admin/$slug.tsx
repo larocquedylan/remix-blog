@@ -7,7 +7,12 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import { createPost, getPost, updatePost } from "~/models/post.server";
+import {
+  createPost,
+  deletePost,
+  getPost,
+  updatePost,
+} from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
 
 // define loader
@@ -36,6 +41,13 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   //  console.log(Object.fromEntries(await request.formData()));
   const formData = await request.formData();
+
+  // get the intent from the form
+  const intent = formData.get("intent");
+  if (intent === "delete") {
+    await deletePost(params.slug);
+    return redirect("/posts/admin");
+  }
 
   // get the values from the form
   const title = formData.get("title");
@@ -99,6 +111,7 @@ export default function newPostRoute() {
   const formData = navigation.formData;
   const isUpdating = formData?.get("intent") === "update";
   const isCreating = formData?.get("intent") === "create";
+  const isDeleting = formData?.get("intent") === "delete";
 
   // state variable to determine if we are creating a new post or updating
   const isNewPost = !data.post;
@@ -152,7 +165,20 @@ export default function newPostRoute() {
           defaultValue={data.post?.markdown}
         />
       </p>
-      <p className="text-right">
+      <div className="flex justify-end gap-4">
+        {isNewPost ? null : (
+          <button
+            type="button"
+            name="intent"
+            value="delete"
+            className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:bg-red-400 disabled:bg-red-300"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete Post"}
+            Delete Post
+          </button>
+        )}
+
         <button
           type="submit"
           name="intent"
@@ -163,7 +189,7 @@ export default function newPostRoute() {
           {isNewPost ? (isCreating ? "Creating..." : "Create Post") : null}
           {isNewPost ? null : isUpdating ? "Updating..." : "Update Post"}
         </button>
-      </p>
+      </div>
     </Form>
   );
 }
