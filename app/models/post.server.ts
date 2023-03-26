@@ -28,3 +28,11 @@ export async function createPost(
 ) {
   return prisma.post.create({ data: post });
 }
+
+// update, pass the slug so we know which to update
+export async function updatePost(
+  slug: string,
+  post: Pick<Post, "slug" | "title" | "markdown">
+) {
+  return prisma.post.update({ where: { slug }, data: post }); // return where the slug is equal to the slug we pass in and data is the post we pass in
+}
