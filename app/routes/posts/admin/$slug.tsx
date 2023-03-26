@@ -45,7 +45,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   // get the intent from the form
   const intent = formData.get("intent");
   if (intent === "delete") {
+    console.log("1");
     await deletePost(params.slug);
+    // console.log("deleting...");
     return redirect("/posts/admin");
   }
 
@@ -168,14 +170,13 @@ export default function newPostRoute() {
       <div className="flex justify-end gap-4">
         {isNewPost ? null : (
           <button
-            type="button"
+            type="submit"
             name="intent"
             value="delete"
             className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:bg-red-400 disabled:bg-red-300"
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete Post"}
-            Delete Post
           </button>
         )}
 
