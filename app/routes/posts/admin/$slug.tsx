@@ -7,6 +7,7 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
+import type { Post } from "~/models/post.server";
 import {
   createPost,
   deletePost,
@@ -15,17 +16,23 @@ import {
 } from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
 
+// loader type checking
+type LoaderData = { post?: Post };
+
 // define loader
 export const loader: LoaderFunction = async ({ request, params }) => {
   await requireAdminUser(request); // require admin for a new post
+  // add type check to params
+  invariant(params.slug, "slug is required");
+
   // new post
   if (params.slug === "new") {
     // return empty form data
-    return json({});
+    return json<LoaderData>({});
   }
   // update post
   const post = await getPost(params.slug); // get post data by slug
-  return json({ post }); // return that post
+  return json<LoaderData>({ post }); // return that post
 };
 
 // define action type
@@ -39,13 +46,15 @@ export const action: ActionFunction = async ({ request, params }) => {
   // require admin for a new post
   await requireAdminUser(request);
 
+  // addd invariant as slug is required
+  invariant(params.slug, "slug is required");
+
   //  console.log(Object.fromEntries(await request.formData()));
   const formData = await request.formData();
 
   // get the intent from the form
   const intent = formData.get("intent");
   if (intent === "delete") {
-    console.log("1");
     await deletePost(params.slug);
     // console.log("deleting...");
     return redirect("/posts/admin");
@@ -104,7 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 const inputClassName = "rounded border border-gray-300 py-2 px-4 block w-full";
 
 export default function newPostRoute() {
-  const data = useLoaderData(); // gets empty form or the slug for that post
+  const data = useLoaderData() as LoaderData; // gets empty form or the slug for that post
   const errors = useActionData() as ActionData; // useActionData returns the data from the action function, we define the types accepted in the type ActionData
 
   // using useTransition() to show a loading state
