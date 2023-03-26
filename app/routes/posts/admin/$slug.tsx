@@ -1,15 +1,26 @@
 import { json, LoaderFunction, redirect } from "@remix-run/node";
 import type { ActionFunction } from "@remix-run/node";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from "@remix-run/react";
 import invariant from "tiny-invariant";
-import { createPost } from "~/models/post.server";
+import { createPost, getPost, updatePost } from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
 
 // define loader
-export const loader: LoaderFunction = async ({ request }) => {
-  // require admin for a new post
-  await requireAdminUser(request);
-  return json({}); // if you define a loader, you must return something, so we use an empty object
+export const loader: LoaderFunction = async ({ request, params }) => {
+  await requireAdminUser(request); // require admin for a new post
+  // new post
+  if (params.slug === "new") {
+    // return empty form data
+    return json({});
+  }
+  // update post
+  const post = await getPost(params.slug); // get post data by slug
+  return json({ post }); // return that post
 };
 
 // define action type
@@ -19,9 +30,10 @@ type ActionData = {
   markdown: string | null;
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
   // require admin for a new post
   await requireAdminUser(request);
+
   //  console.log(Object.fromEntries(await request.formData()));
   const formData = await request.formData();
 
@@ -53,7 +65,12 @@ export const action: ActionFunction = async ({ request }) => {
   invariant(typeof markdown === "string", "markdown should be a string");
 
   // create the post
-  await createPost({ title, slug, markdown });
+  if (params.slug === "new") {
+    await createPost({ title, slug, markdown });
+  } else {
+    // update the post
+    await updatePost(params.slug, { title, slug, markdown });
+  }
 
   // redirect to the admin page after creating the post
   return redirect("/posts/admin");
@@ -73,15 +90,23 @@ export const action: ActionFunction = async ({ request }) => {
 const inputClassName = "rounded border border-gray-300 py-2 px-4 block w-full";
 
 export default function newPostRoute() {
+  const data = useLoaderData(); // gets empty form or the slug for that post
   const errors = useActionData() as ActionData; // useActionData returns the data from the action function, we define the types accepted in the type ActionData
 
   // using useTransition() to show a loading state
   const navigation = useNavigation();
-  const isCreating = Boolean(navigation.state === "loading");
+  // get formData to see if intent is creat or update
+  const formData = navigation.formData;
+  const isUpdating = formData?.get("intent") === "update";
+  const isCreating = formData?.get("intent") === "create";
+
+  // state variable to determine if we are creating a new post or updating
+  const isNewPost = !data.post;
 
   return (
     // The Form component will automatically handle the form submission action once we define out action function above
-    <Form method="post">
+    <Form method="post" key={data.post?.slug ?? "new"}>
+      {/* key will get the data from the post with the slug(i.e url path) which can be empty, this will make it with slug 'new' if empty or give the key for the existing post we want to update */}
       <p>
         <label>
           Post Title:
@@ -89,7 +114,12 @@ export default function newPostRoute() {
           {errors?.title ? (
             <span className="text-red-500"> {errors.title}</span>
           ) : null}
-          <input type="text" name="title" className={inputClassName} />
+          <input
+            type="text"
+            name="title"
+            className={inputClassName}
+            defaultValue={data.post?.title}
+          />
         </label>
       </p>
       <p>
@@ -98,7 +128,12 @@ export default function newPostRoute() {
           {errors?.slug ? (
             <span className="text-red-500"> {errors.slug}</span>
           ) : null}
-          <input type="text" name="slug" className={inputClassName} />
+          <input
+            type="text"
+            name="slug"
+            className={inputClassName}
+            defaultValue={data.post?.slug}
+          />
         </label>
       </p>
       <p>
@@ -114,15 +149,19 @@ export default function newPostRoute() {
           rows={20}
           name="markdown"
           className={`${inputClassName} font-mono`}
+          defaultValue={data.post?.markdown}
         />
       </p>
       <p className="text-right">
         <button
           type="submit"
+          name="intent"
+          value={isNewPost ? "create" : "update"}
           className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
-          disabled={isCreating}
+          disabled={isCreating || isUpdating}
         >
-          {isCreating ? "Creating..." : "Create Post"}
+          {isNewPost ? (isCreating ? "Creating..." : "Create Post") : null}
+          {isNewPost ? null : isUpdating ? "Updating..." : "Update Post"}
         </button>
       </p>
     </Form>
