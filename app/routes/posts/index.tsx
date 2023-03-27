@@ -16,6 +16,7 @@ export const loader: LoaderFunction = async () => {
 
 export default function Posts() {
   // const { posts } = useLoaderData<typeof loader>();
+  // const { posts } = useLoaderData() as LoaderData;
   const { posts } = useLoaderData() as LoaderData;
   const adminUser = useOptionalAdminUser();
 
