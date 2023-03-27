@@ -122,7 +122,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 const inputClassName = "rounded border border-gray-300 py-2 px-4 block w-full";
 
-export default function newPostRoute() {
+export default function NewPostRoute() {
   const data = useLoaderData() as LoaderData; // gets empty form or the slug for that post
   const errors = useActionData() as ActionData; // useActionData returns the data from the action function, we define the types accepted in the type ActionData
 
