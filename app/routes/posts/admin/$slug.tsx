@@ -3,8 +3,10 @@ import type { ActionFunction } from "@remix-run/node";
 import {
   Form,
   useActionData,
+  useCatch,
   useLoaderData,
   useNavigation,
+  useParams,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import type { Post } from "~/models/post.server";
@@ -32,6 +34,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
   // update post
   const post = await getPost(params.slug); // get post data by slug
+
+  // if there is no post, throw a new response
+  if (!post) {
+    return new Response("Not found", {
+      status: 404,
+    });
+  }
+
   return json<LoaderData>({ post }); // return that post
 };
 
@@ -202,4 +212,29 @@ export default function newPostRoute() {
       </div>
     </Form>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+  if (caught.status === 404) {
+    return (
+      <div className="text-red-500">
+        Uh oh! The post with the slug "{params.slug}" does not exist!
+      </div>
+    );
+  }
+  throw new Error(`Unsupported thrown response status code: ${caught.status}`);
+}
+
+export function ErrorBoundary({ error }: { error: unknown }) {
+  if (error instanceof Error) {
+    return (
+      <div className="text-red-500">
+        Oh no, something went wrong!
+        <pre>{error.message}</pre>
+      </div>
+    );
+  }
+  return <div className="text-red-500">Oh no, something went wrong!</div>;
 }
