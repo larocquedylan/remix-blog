@@ -1,13 +1,3 @@
-# Remix Indie Stack
-
-![The Remix Indie Stack](https://repository-images.githubusercontent.com/465928257/a241fa49-bd4d-485a-a2a5-5cb8e4ee0abf)
-
-Learn more about [Remix Stacks](https://remix.run/stacks).
-
-```
-npx create-remix@latest --template remix-run/indie-stack
-```
-
 ## What's in the stack
 
 - [Fly app deployment](https://fly.io) with [Docker](https://www.docker.com/)
@@ -169,7 +159,7 @@ For lower level tests of utilities and individual components, we use `vitest`. W
 
 ### Type Checking
 
-This project uses TypeScript. It's recommended to get TypeScript set up for your editor to get a really great in-editor experience with type checking and auto-complete. To run type checking across the whole project, run `npm run typecheck`.
+This project uses TypeScript. To run type checking across the whole project, run `npm run typecheck`.
 
 ### Linting
 
